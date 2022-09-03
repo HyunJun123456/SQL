@@ -234,7 +234,92 @@ select 이름, 과목번호
 from 학생 as s, 수강 e
 where s.학번=e.학번 and 과목번호='c002';
 
+-- 주소가 같은 학생들의 이름을 쌍으로 검색하시오. 이때, 검색되는 첫 번째 학생이 두 번째 학생보다 학년이 높도록 하시오.
+select s1.이름, s2.이름
+from 학생 s1 join 학생 s2 on s1.주소=s2.주소
+where s1.학년>s2.학년;
 
+-- 과목을 수강하지 않은 학생을 포함하여 모든 학생의 학번, 이름과 학생이 수강한 교과의 평가학점을 검색하시오. 
+select 학생.학번, 이름, 평가학점
+from 학생 left outer join 수강 on 학생.학번=수강.학번;
+
+create table 학생1 as (select * from 학생);
+create table 과목1 as (select * from 과목);
+create table 수강1 as (select * from 수강);
+
+-- '학생1' 테이블에 학번 'g001' 이름 '김연아2', 주소 '서울 서초', 학년 4, 나이 23, 성별 '여', 휴대폰번호'010-1111-2222', 소속학과 '컴퓨터'인 학생 정보를 삽입하시오.
+insert into 학생1
+values('g001', '김연아2', '서울 서초', 4, 23, '여', '010-1111-2222', '컴퓨터');
+
+-- 학번 'g002', 이름 '홍길동2', 주소 '미정', 학년 1, 나이 26, 성별 '남', 휴대폰번호 'NULL', 소속학과 '통계'인 학생 정보를 삽입하시오.
+insert into 학생1(이름, 주소, 학년, 나이, 성별, 휴대폰번호, 소속학과, 학번)
+values ('홍길동2', default, 1, 26, '남', null, '통계', 'g002');
+
+-- 학번 'g003', 이름 '이승엽2', 주소 '미정', 학년 3, 나이 30, 성별 '남', 휴대폰번호 'NULL', 소속학과 '정보통신'인 학생 정보를 삽입하시오.
+insert into 학생1(학년, 나이, 성별, 소속학과, 학번, 이름)
+values(3, 30, '남', '정보통신', 'g003', '이승엽2');
+
+select * from 학생1 where 학번 like 'g%';
+
+set sql_safe_updates=0;
+
+-- 이은진 학생의 학년을 3학년으로 수정하시오
+update 학생1 
+set 학년=3 
+where 이름='이은진';
+
+select * from 학생1 where 이름='이은진';
+
+-- 모든 학생의 학년을 1씩 증가시키고 소속학과를 자유전공학부로 변경하시오.
+update 학생1
+set 학년=학년+1, 소속학과='자유전공학부' 
+where 학년=4;
+
+select * from 학생1;
+
+-- 수강 내용이 없는 학생의 소속학과를 널 값으로 수정하시오.
+update 학생1
+set 소속학과=null
+where 학번 not in(select 학번
+				from 수강1);
+                
+select * from 학생1;
+
+-- 학번이 s003인 학생의 수강 내용을 이은진 학생이 수강한 것으로 수정하시오.
+update 수강1 
+set 학번=(select 학번 
+		from 학생1 
+        where 이름='이은진') 
+where 학번='s003';
+
+select * from 수강1 where 학번='s003' or 학번='s007';
+
+-- 송윤아 학생의 모든 정보를 삭제하시오
+delete from 학생1
+where 이름='송윤아';
+
+select * from 학생1;
+
+-- 3학년 모든 학생 정보를 삭제하시오
+delete from 학생1
+where 학년=3;
+
+select * from 학생1;
+
+-- 수강자가 2명 미만인 과목에 대한 과목 정보를 모두 삭제하시오.
+delete from 과목1
+where 과목번호 in 
+		(select 과목번호
+        from 수강1 
+        group by 과목번호 
+        having count(*)<2);
+        
+select * from 과목1;
+
+-- 모든 학생 정보를 삭제하시오.
+delete from 학생1;
+
+select * from 학생1;
 
 
 
